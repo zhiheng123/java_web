@@ -1,33 +1,294 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.test</groupId>
-  <artifactId>transition</artifactId>
-  <packaging>war</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>transition Maven Webapp</name>
-  <url>http://maven.apache.org</url>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  <build>
-    <finalName>transition</finalName>
-    <plugins>
-    	<plugin>
-    		<groupId>org.codehaus.mojo</groupId>
-    		<artifactId>tomat-maven-plugin</artifactId>
-    		<configuration>
-    			<warFile>target/transition.war</warFile>
-    			<server>tomcat</server>
-    			<url>http://localhost:9090/manager/text</url>
-    			<path>/transition</path>
-    		</configuration>
-    	</plugin>
-    </plugins>
-  </build>
-</project>
+
+1.开启Eclipse，单击Flie→New→Web Project。
+2.在Project Name文本框中写入logindemo其它保持默认选项单击Finish按钮。此时在Package Explorer(包浏览器)中出现我们新建的项目，把项目展开在src文件夹上单击右键选择New→Package出现New Java Package对话框。
+3.在Name文本框中写入register单击Finish按钮。在src文件夹中新建了一个register包，用同样的方法在src文件夹中建一个login包。右键单击register包选择New→Class出现New Java Class对话框。
+4.在Name文本框中填写Register单击Finish按钮。在register包下生成Register.java文件，更改其内容如下：
+ 
+package register;
+import java.io.*;
+import java.util.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.sql.*;
+//import com.mysql.jdbc.*;
+public class Register  extends HttpServlet{ 
+    private String name;
+    private String pass;
+    private String confirm;
+  public synchronized void doPost(HttpServletRequest request,HttpServletResponse response)
+                        throws ServletException,IOException
+   {
+       this.name=request.getParameter("account");
+       this.pass=request.getParameter("password");
+       this.confirm=request.getParameter("confirm");
+       PrintWriter out=response.getWriter();
+       //驱动程序名
+       String driverName="com.mysql.jdbc.Driver";
+       //数据库用户名
+       String userName="root";
+       //密码
+       String userPasswd="123456";
+       //数据库名
+       String dbName="database";
+       //表名
+       String tableName="users";
+       //联结字符串
+       String url="jdbc:mysql://localhost/"+dbName+"?user="+userName+"&password="+userPasswd;
+      try
+      {
+       Class.forName("org.gjt.mm.mysql.Driver");
+       Connection connection=DriverManager.getConnection(url);
+       Statement statement = connection.createStatement();
+      
+       String sql="SELECT * FROM "+tableName;
+       ResultSet rs=statement.executeQuery(sql);
+      
+       while(true) 
+       {
+           if(rs.next())
+           {
+                if(this.name.equals(rs.getString(1)))
+                {             
+                   out.print("<h1>"+"User Name is in Database!");              
+                   break;
+                 }
+           }
+           else
+           {
+                 sql="INSERT INTO "+tableName+" VALUES('"+this.name+"','"+this.pass+"')";
+                 statement.execute(sql);
+                 out.print("<h1>"+"Register Successful!");
+                 break;
+           }
+       }        
+       return;
+       }
+       catch(SQLException e)
+       {
+       }
+       catch(ClassNotFoundException e)
+       {
+       }
+             
+    }
+ 
+  public synchronized void  doGet(HttpServletRequest request,HttpServletResponse response)
+                        throws ServletException,IOException
+    {
+      doPost(request,response);
+    }
+}
+用同样的方法在login包下建一个Login.java文件，其内容如下：
+ 
+package login;
+import java.io.*;
+import java.util.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.sql.*;
+//import com.mysql.jdbc.*;
+public class Login  extends HttpServlet
+{ 
+    private String name;
+    private String pass;
+  public synchronized void doPost(HttpServletRequest request,HttpServletResponse response)
+                        throws ServletException,IOException
+    {
+       this.name=request.getParameter("account");
+       this.pass=request.getParameter("password");
+       PrintWriter out=response.getWriter();
+       //驱动程序名
+        String driverName="com.mysql.jdbc.Driver";
+       //数据库用户名
+       String userName="root";
+       //密码
+       String userPasswd="123";
+       //数据库名
+       String dbName="database";
+       //表名
+       String tableName="users";
+       //联结字符串
+       String url="jdbc:mysql://localhost/"+dbName+"?user="+userName+"&password="+userPasswd;
+      try
+      {
+       Class.forName("org.gjt.mm.mysql.Driver");
+       Connection connection=DriverManager.getConnection(url);
+       Statement statement = connection.createStatement();
+       String sql="SELECT * FROM "+tableName;
+       ResultSet rs = statement.executeQuery(sql);
+        while(true) 
+          {
+              if(rs.next())
+              {
+                   if((this.name.equals(rs.getString(1)))&&(this.pass.equals(rs.getString(2))))
+                   {
+                 
+                      out.print("<h1>"+"Login Success!");
+                 
+                      break;
+                    }
+              }
+              else
+              {
+                 out.print("<h1>"+"Account or Password Is Invalid!");
+                 break;
+              }
+          }         
+          return;
+        }
+       catch(SQLException e)
+       {
+       }
+       catch(ClassNotFoundException e)
+       {
+       }
+             
+    }
+ 
+  public synchronized void  doGet(HttpServletRequest request,HttpServletResponse response)
+                        throws ServletException,IOException
+    {
+      doPost(request,response);
+    }
+}
+在WebRoot文件夹上单击右键点击New→JSP出现Create a new JSP page对话框
+ 
+在File Name文本框中填写index.jsp单击Finish按钮。更改其内容如下：
+<%...@ page language="java" import="java.util.*" pageEncoding="ISO-8859-1"%>
+<html>
+<body bgcolor=white><Font size=1 >
+<script language="javascript">
+ function login_click()
+{
+form1.action="Login";
+form1.submit();
+}
+   
+function register_click()
+{
+form1.action="register.jsp";
+form1.submit();
+}
+</script>
+<form name="form1">
+<table>
+<tr>
+<td align="center">
+Account:
+</td>
+<td>
+<input size="18" type="text" name="account">
+</td>
+</tr>
+<tr>
+<td align="center">
+Password:
+</td>
+<td>
+<input size="20" type="password" name="password">
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<td width="60">
+</td>
+<td width="80">
+ <input type="submit" name="register" value="register" onClick="return register_click()">
+</td>
+                     
+<td width="80">
+<input type="submit" name="login" value="  login  " onClick="return login_click()">
+</td>
+</tr>
+</table>
+</form>
+</body>
+</html>
+用同样的方法在WebRoot目录下创建一个register.jsp文件，其内容如下：
+<%...@ page language="java" import="java.util.*" pageEncoding="ISO-8859-1"%>
+<html>
+<body bgcolor=white><Font size=1 >
+<form action="Register">
+<table>
+<tr>
+<td align="center">
+Register Account:
+</td>
+<td>
+<input size="18" type="text" name="account">
+</td>
+</tr>
+<tr>
+<td align="center">
+Password:
+</td>
+<td>
+<input type="password" name="password">
+</td>
+</tr>
+<tr>
+<td>
+Confirm Password:
+</td>
+<td align="center">
+<input type="password" name="confirm">
+</td>
+</tr>
+</table>
+               
+<table>
+<tr>
+<td width="116">
+</td>
+<td width="120">
+<input type="submit" name="register" value="register">
+</td>
+</tr>
+</table>
+</form>
+</body>
+</html>
+修改WebRootWEB-INF目录下的web.xml文件，修改后的web.xml文件内容如下：
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app version="2.4"
+ xmlns="http://java.sun.com/xml/ns/j2ee"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+<display-name>My Web Application</display-name>
+<description>
+A application for test.
+</description>
+<servlet>
+<servlet-name>Login</servlet-name>
+<display-name>Login</display-name>
+<description>A login Servlet</description>
+<servlet-class>login.Login</servlet-class>
+</servlet>
+<servlet-mapping>
+<servlet-name>Login</servlet-name>
+<url-pattern>/Login</url-pattern>
+</servlet-mapping>
+<servlet>
+<servlet-name>Register</servlet-name>
+<display-name>Register</display-name>
+<description>A Register Servlet</description>
+<servlet-class>register.Register</servlet-class>
+</servlet>
+<servlet-mapping>
+<servlet-name>Register</servlet-name>
+<url-pattern>/Register</url-pattern>
+</servlet-mapping>
+ <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+ </welcome-file-list>
+</web-app>
+开启MySql服务器，在控制面板→管理工具→服务中找到MySql服务启动该服务。打开MySQL Administrator输入数据库用户名和密码进入数据库,建立一个名为database的数据库，在database数据库中建立一个名为users的表，并为users表建立2个字段name和password到此数据库建立完毕。
+在logindemo项目上单击右键选择MyEclipse→Add and Remove Project Deployments...弹出Project Deployments对话框
+在Project下拉选项框中选logindemo然后单击add按钮出现New Deployment对话框
+ 
+在server下拉选项框中选择Tomcat5单击Finish按钮，再单击OK按钮我们的项目就部署好了。接下来在Eclipse中启动Tomcat服务器，然后在浏览器的地址栏里输入http://localhost:8080/logindemo/index.jsp就看到下面的结果了
+ 
+先要注册一个用户名，如果数据库中有这个用户名就会显示“User Name is in Database”如果没有就会注册成功然后返回登录页面用这个用户名登录输入正确的用户名和密码就会显示“Login Success!”否则显示“Account or Password Is Invalid!”需要注意的是我这里登录数据库的用户名为root密码为123需要根据实际情况修改相应java文件中的用户名和密码。
